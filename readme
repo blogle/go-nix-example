@@ -1,0 +1,28 @@
+Starting from a baseline go package
+
+lets prepare nix by pinning the upstream package repository
+```
+nix run nixpkgs.niv -c niv init
+nix run nixpkgs.niv -c niv update nixpkgs -b nixos-19.09
+```
+
+you will now have a nix directory that pins the entire set of nix packages.
+This will ensure anyone else you work with will have the exact same toolchain.
+
+nixpkgs.nix -> imports the package set specified by the niv sources
+release.nix -> where our package definition goes
+default.nix -> how to build this go package
+
+nix puts build output in the current directory behind a symlink called ./result
+
+to build the go binary
+nix build -f release.nix go-nix-example
+
+to build a container that calls into the binary
+nix build -f release.nix go-nix-container
+
+load the container into docker and fire it up
+docker load < ./result
+docker run -it go-nix-example:wb7lxf19baxbk4g6cn08mq85bjw3by85
+
+here its worth noting that nix will default to tagging the image with cryptographic hash. But it can alternatively be set by setting `tag = "<whatevs>";` in the call to buildLayeredImage.
